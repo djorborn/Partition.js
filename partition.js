@@ -9,17 +9,13 @@
         * width: barWidth || 10px;
 */
 
-(function (global, factory) {
-    this.factory = factory()
-}(this, (function () {
 
-    this.Partition = Partition;
 
     function Partition (/* options */) {
         var options = arguments[0];
         var data = {};
         var handler = {};
-
+        _this = this
         /**
          * Check for options arguments
          * make sure it is an Object
@@ -37,6 +33,8 @@
 
         data.splitSize = options.splitSize || '50 50';
         data.splitSize = data.splitSize.split(' ');
+
+        data.stopGap = options.stopGap || 10;
 
         // Set Bar
         data.barWidth = options.barWidth || 10;
@@ -90,7 +88,8 @@
                         a: obj['a'],
                         b: obj['b'],
                         bar: obj['bar'],
-                        barWidth: obj['barWidth']
+                        barWidth: obj['barWidth'],
+                        stopGap: obj['stopGap'],
                     })
                 } else {
                     resizeVertical({
@@ -98,7 +97,8 @@
                         a: obj['a'],
                         b: obj['b'],
                         bar: obj['bar'],
-                        barWidth: obj['barWidth']
+                        barWidth: obj['barWidth'],
+                        stopGap: obj['stopGap'],
                     })
                 }
             }
@@ -107,8 +107,18 @@
 
         var proxy = new Proxy(data, handler);
 
+        _this.fullStop = function () {
+            proxy.mousedown = false;
+            document.body.style.userSelect = '';
+        }
+
+        _this.poop = function () {
+            console.log('poop')
+        }
+
         proxy.bar.addEventListener('mousedown', function (event) {
             proxy.mousedown = true;
+            document.body.style.userSelect = 'none';
         })
 
         proxy.a.parentElement.onmousemove = function (e) {
@@ -123,15 +133,15 @@
 
         proxy.a.parentNode.onmouseleave = function () {
             proxy.mousedown = false;
+            _this.fullStop()
         }
 
         proxy.a.parentNode.onmouseup = function () {
             proxy.mousedown = false;
+            _this.fullStop()
         }
 
-        this.fullStop = function () {
-            proxy.mousedown = false;
-        }
+
 
         this.mousedown = proxy.mousedown;
 
@@ -142,8 +152,10 @@
             var cursor = obj.x;
             cursor -= offset;
             var percent = (cursor/rootWidth)*100;
-            obj.a.style.width = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
-            obj.b.style.width = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
+            if (percent > obj.stopGap || percent < (100-obj.stopGap) ) {
+                obj.a.style.width = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
+                obj.b.style.width = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
+            }
         }
         function resizeHorizontal(obj) {
             var bcr = obj.a.parentElement.getBoundingClientRect();
@@ -152,9 +164,10 @@
             var cursor = obj.y;
             cursor -= offset;
             var percent = (cursor/rootHeight)*100;
-            obj.a.style.height = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
-            obj.b.style.height = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
+            if ( percent > obj.stopGap && percent < (100-obj.stopGap) ) {
+                obj.a.style.height = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
+                obj.b.style.height = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
+            }
         }
-    }
 
-})))
+    }
