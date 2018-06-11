@@ -15,7 +15,8 @@
         var options = arguments[0];
         var data = {};
         var handler = {};
-        _this = this
+        var _this = this;
+
         /**
          * Check for options arguments
          * make sure it is an Object
@@ -65,26 +66,58 @@
             data.bar.style.width = '100%';
             data.bar.style.cursor = 'ns-resize';
         }
+
+        data.onresize = options.onresize
+
         // Global Style Settings
         data.a.style.float = 'left';
+        data.a.style.position = 'relative';
+        data.b.style.position = 'relative';
         data.b.style.float = 'left';
         data.bar.style.float = 'left';
 
         // Insert Bar Element
         data.a.parentNode.insertBefore(data.bar, data.b);
+// -----------------------------------------------------------------------------
+        // Iframe Fix
+        if (options.iframe) {
+            for (var i = 0; i < 2; i++) {
+                var fix = document.createElement('div');
+
+                fix.style = 'position: absolute;width: 100%;height: 100%;'+
+                'background: transparent;top: 0;left: 0;z-index: 9; display: none;';
+                
+                data[('fix' + i)] = fix;
+            }
+            data.a.appendChild(data.fix0);
+            data.b.appendChild(data.fix1);
+        }
+// -----------------------------------------------------------------------------
+
 
         data.mousedown = false;
-
 
         handler.get = function(obj, key) {
             return obj[key];
         }
         handler.set = function(obj, key, value) {
+            if (key === 'fixOn') {
+                if (value) {
+                    obj['fix0'].style.display = 'block';
+                    obj['fix1'].style.display = 'block';
+                } else {
+                    obj['fix1'].style.display = 'none';
+                    obj['fix0'].style.display = 'none';
+                }
+            }
             if (key === 'resize') {
                 // Resize A and B
+                if (obj['onresize']) {
+                    obj['onresize'](value)
+                }
                 if (obj['direction'] === 'horizontal') {
                     resizeHorizontal({
-                        y: value.y,
+                        click: value.y,
                         a: obj['a'],
                         b: obj['b'],
                         bar: obj['bar'],
@@ -93,7 +126,7 @@
                     })
                 } else {
                     resizeVertical({
-                        x: value.x,
+                        click: value.x,
                         a: obj['a'],
                         b: obj['b'],
                         bar: obj['bar'],
@@ -104,23 +137,26 @@
             }
             obj[key] = value;
         }
-
+        // Main Proxy
         var proxy = new Proxy(data, handler);
 
+        /**
+         * fullStop function
+         * Stops resize
+         */
         _this.fullStop = function () {
             proxy.mousedown = false;
+            proxy.fixOn = false
             document.body.style.userSelect = '';
         }
 
-        _this.poop = function () {
-            console.log('poop')
-        }
-
+        // bar mousedown event
         proxy.bar.addEventListener('mousedown', function (event) {
             proxy.mousedown = true;
             document.body.style.userSelect = 'none';
-        })
-
+            proxy.fixOn = true;
+        });
+        // Main mousemove Resize event
         proxy.a.parentElement.onmousemove = function (e) {
             if (proxy.mousedown) {
                 var resize = {
@@ -130,26 +166,42 @@
                 proxy.resize = resize;
             }
         }
-
+        // mouseleave event to kill resize
         proxy.a.parentNode.onmouseleave = function () {
             proxy.mousedown = false;
-            _this.fullStop()
+            _this.fullStop();
         }
-
+        // mouseup event to kill resize
         proxy.a.parentNode.onmouseup = function () {
             proxy.mousedown = false;
-            _this.fullStop()
+            _this.fullStop();
         }
 
 
-
+        // Boolean for bar mousedown
+        // if true then the bar is ready
         this.mousedown = proxy.mousedown;
 
+//---------------------------------------------------------------
+        /** resize function argument obj
+          * click: pageX or pageY,
+          * a: Element Object,
+          * b: Element Object,
+          * bar: Element Object,
+          * barWidth: Number
+          * stopGap: Number
+         */
+
+        /**
+         * resizeVertical
+         * Resize for vertical direction
+         * @param {object} obj
+         */
         function resizeVertical(obj) {
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.left;
             var rootWidth = bcr.width;
-            var cursor = obj.x;
+            var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootWidth)*100;
             if (percent > obj.stopGap || percent < (100-obj.stopGap) ) {
@@ -157,11 +209,16 @@
                 obj.b.style.width = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
             }
         }
+        /**
+         * resizeHorizontal
+         * Resize for horizontal direction
+         * @param {object} obj
+         */
         function resizeHorizontal(obj) {
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.top;
             var rootHeight = bcr.height;
-            var cursor = obj.y;
+            var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootHeight)*100;
             if ( percent > obj.stopGap && percent < (100-obj.stopGap) ) {

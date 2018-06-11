@@ -35,6 +35,9 @@ To make a new Partition: `new Partition({options})`:
 - __splitSize__
     - The initial size of the elements in percent.
     - defualt is '50 50'
+- __iframe__
+    - Lets you resize over iframes
+    - Boolean defualt = false
 
 ## Example Code
 HTML
