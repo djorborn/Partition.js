@@ -84,7 +84,7 @@
                 // Resize A and B
                 if (obj['direction'] === 'horizontal') {
                     resizeHorizontal({
-                        y: value.y,
+                        click: value.y,
                         a: obj['a'],
                         b: obj['b'],
                         bar: obj['bar'],
@@ -93,7 +93,7 @@
                     })
                 } else {
                     resizeVertical({
-                        x: value.x,
+                        click: value.x,
                         a: obj['a'],
                         b: obj['b'],
                         bar: obj['bar'],
@@ -104,23 +104,24 @@
             }
             obj[key] = value;
         }
-
+        // Main Proxy
         var proxy = new Proxy(data, handler);
 
+        /**
+         * fullStop function
+         * Stops resize
+         */
         _this.fullStop = function () {
             proxy.mousedown = false;
             document.body.style.userSelect = '';
         }
 
-        _this.poop = function () {
-            console.log('poop')
-        }
-
+        // bar mousedown event
         proxy.bar.addEventListener('mousedown', function (event) {
             proxy.mousedown = true;
             document.body.style.userSelect = 'none';
-        })
-
+        });
+        // Main mousemove Resize event
         proxy.a.parentElement.onmousemove = function (e) {
             if (proxy.mousedown) {
                 var resize = {
@@ -130,21 +131,37 @@
                 proxy.resize = resize;
             }
         }
-
+        // mouseleave event to kill resize
         proxy.a.parentNode.onmouseleave = function () {
             proxy.mousedown = false;
             _this.fullStop()
         }
-
+        // mouseup event to kill resize
         proxy.a.parentNode.onmouseup = function () {
             proxy.mousedown = false;
             _this.fullStop()
         }
 
 
-
+        // Boolean for bar mousedown
+        // if true then the bar is ready
         this.mousedown = proxy.mousedown;
 
+//---------------------------------------------------------------
+        /** resize function argument obj
+          * click: pageX or pageY,
+          * a: Element Object,
+          * b: Element Object,
+          * bar: Element Object,
+          * barWidth: Number
+          * stopGap: Number
+         */
+
+        /**
+         * resizeVertical
+         * Resize for vertical direction
+         * @param {object} obj
+         */
         function resizeVertical(obj) {
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.left;
@@ -157,6 +174,11 @@
                 obj.b.style.width = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
             }
         }
+        /**
+         * resizeHorizontal
+         * Resize for horizontal direction
+         * @param {object} obj
+         */
         function resizeHorizontal(obj) {
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.top;
