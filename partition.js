@@ -15,7 +15,8 @@
         var options = arguments[0];
         var data = {};
         var handler = {};
-        _this = this
+        var _this = this;
+
         /**
          * Check for options arguments
          * make sure it is an Object
@@ -65,23 +66,55 @@
             data.bar.style.width = '100%';
             data.bar.style.cursor = 'ns-resize';
         }
+
+        data.onresize = options.onresize
+
         // Global Style Settings
         data.a.style.float = 'left';
+        data.a.style.position = 'relative';
+        data.b.style.position = 'relative';
         data.b.style.float = 'left';
         data.bar.style.float = 'left';
 
         // Insert Bar Element
         data.a.parentNode.insertBefore(data.bar, data.b);
+// -----------------------------------------------------------------------------
+        // Iframe Fix
+        if (options.iframe) {
+            for (var i = 0; i < 2; i++) {
+                var fix = document.createElement('div');
+
+                fix.style = 'position: absolute;width: 100%;height: 100%;'+
+                'background: transparent;top: 0;left: 0;z-index: 9; display: none;';
+                
+                data[('fix' + i)] = fix;
+            }
+            data.a.appendChild(data.fix0);
+            data.b.appendChild(data.fix1);
+        }
+// -----------------------------------------------------------------------------
+
 
         data.mousedown = false;
-
 
         handler.get = function(obj, key) {
             return obj[key];
         }
         handler.set = function(obj, key, value) {
+            if (key === 'fixOn') {
+                if (value) {
+                    obj['fix0'].style.display = 'block';
+                    obj['fix1'].style.display = 'block';
+                } else {
+                    obj['fix1'].style.display = 'none';
+                    obj['fix0'].style.display = 'none';
+                }
+            }
             if (key === 'resize') {
                 // Resize A and B
+                if (obj['onresize']) {
+                    obj['onresize'](value)
+                }
                 if (obj['direction'] === 'horizontal') {
                     resizeHorizontal({
                         click: value.y,
@@ -113,6 +146,7 @@
          */
         _this.fullStop = function () {
             proxy.mousedown = false;
+            proxy.fixOn = false
             document.body.style.userSelect = '';
         }
 
@@ -120,6 +154,7 @@
         proxy.bar.addEventListener('mousedown', function (event) {
             proxy.mousedown = true;
             document.body.style.userSelect = 'none';
+            proxy.fixOn = true;
         });
         // Main mousemove Resize event
         proxy.a.parentElement.onmousemove = function (e) {
@@ -134,12 +169,12 @@
         // mouseleave event to kill resize
         proxy.a.parentNode.onmouseleave = function () {
             proxy.mousedown = false;
-            _this.fullStop()
+            _this.fullStop();
         }
         // mouseup event to kill resize
         proxy.a.parentNode.onmouseup = function () {
             proxy.mousedown = false;
-            _this.fullStop()
+            _this.fullStop();
         }
 
 
@@ -166,7 +201,7 @@
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.left;
             var rootWidth = bcr.width;
-            var cursor = obj.x;
+            var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootWidth)*100;
             if (percent > obj.stopGap || percent < (100-obj.stopGap) ) {
@@ -183,7 +218,7 @@
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.top;
             var rootHeight = bcr.height;
-            var cursor = obj.y;
+            var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootHeight)*100;
             if ( percent > obj.stopGap && percent < (100-obj.stopGap) ) {
