@@ -76,6 +76,9 @@
         data.b.style.float = 'left';
         data.bar.style.float = 'left';
 
+        // Set CSS class for bar
+        data.bar.classList.add('bar-' + data.direction);
+
         // Insert Bar Element
         data.a.parentNode.insertBefore(data.bar, data.b);
 // -----------------------------------------------------------------------------
@@ -86,7 +89,7 @@
 
                 fix.style = 'position: absolute;width: 100%;height: 100%;'+
                 'background: transparent;top: 0;left: 0;z-index: 9; display: none;';
-                
+
                 data[('fix' + i)] = fix;
             }
             data.a.appendChild(data.fix0);
