@@ -1,12 +1,8 @@
 /*
-    I need to set the width and height on init.
-    style for a and b
-    vertical -
-        * width: data.split% || 50%;
-        * height: 100%;
-        * float: left;
-    style for bar -
-        * width: barWidth || 10px;
+    Partition.js
+    created by Daniel Osborn
+    github.com/djorborn
+
 */
 
 
@@ -71,9 +67,9 @@
 
         // Global Style Settings
         data.a.style.float = 'left';
+        data.b.style.float = 'left';
         data.a.style.position = 'relative';
         data.b.style.position = 'relative';
-        data.b.style.float = 'left';
         data.bar.style.float = 'left';
 
         // Set CSS class for bar
@@ -95,6 +91,7 @@
             data.a.appendChild(data.fix0);
             data.b.appendChild(data.fix1);
         }
+        data.iframe = options.iframe;
 // -----------------------------------------------------------------------------
 
 
@@ -104,13 +101,15 @@
             return obj[key];
         }
         handler.set = function(obj, key, value) {
-            if (key === 'fixOn') {
-                if (value) {
-                    obj['fix0'].style.display = 'block';
-                    obj['fix1'].style.display = 'block';
-                } else {
-                    obj['fix1'].style.display = 'none';
-                    obj['fix0'].style.display = 'none';
+            if (obj['iframe']) {
+                if (key === 'fixOn') {
+                    if (value) {
+                        obj['fix0'].style.display = 'block';
+                        obj['fix1'].style.display = 'block';
+                    } else {
+                        obj['fix1'].style.display = 'none';
+                        obj['fix0'].style.display = 'none';
+                    }
                 }
             }
             if (key === 'resize') {
@@ -157,14 +156,17 @@
         proxy.bar.addEventListener('mousedown', function (event) {
             proxy.mousedown = true;
             document.body.style.userSelect = 'none';
-            proxy.fixOn = true;
+            // if (proxy.iframe) {
+            //     proxy.fixOn = true;
+            // }
         });
         // Main mousemove Resize event
         proxy.a.parentElement.onmousemove = function (e) {
             if (proxy.mousedown) {
+                console.log(Object.entries(e))
                 var resize = {
-                    x: e.pageX,
-                    y: e.pageY
+                    x: e.clientX,
+                    y: e.clientY
                 }
                 proxy.resize = resize;
             }
@@ -218,13 +220,16 @@
          * @param {object} obj
          */
         function resizeHorizontal(obj) {
+
             var bcr = obj.a.parentElement.getBoundingClientRect();
+            obj.a.parentElement.style.overflow = 'hidden'
+            console.log(bcr)
             var offset = bcr.top;
             var rootHeight = bcr.height;
             var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootHeight)*100;
-            if ( percent > obj.stopGap && percent < (100-obj.stopGap) ) {
+            if ( percent > obj.stopGap || percent < (100-obj.stopGap) ) {
                 obj.a.style.height = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
                 obj.b.style.height = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
             }
