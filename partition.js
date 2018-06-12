@@ -12,13 +12,13 @@
         var data = {};
         var handler = {};
         var _this = this;
-
+        var exampleObject = "\nnew Partition({\n\tdirection: 'vertical',\n\ta: '#element_one',\n\tb: '#element_two'\n});"
         /**
          * Check for options arguments
          * make sure it is an Object
          */
         if (typeof options !== 'object') {
-            console.error('Please pass options as an Object');
+            console.error('Please pass options as an Object', exampleObject);
             return 1;
         }
         // Direction
@@ -27,6 +27,10 @@
         //Set elements a and b.
         data.a = document.querySelector(options.a);
         data.b = document.querySelector(options.b);
+
+        if (!data.a || !data.b) {
+            console.error('Please pass Elements to a and b.', exampleObject)
+        }
 
         data.splitSize = options.splitSize || '50 50';
         data.splitSize = data.splitSize.split(' ');
@@ -163,7 +167,6 @@
         // Main mousemove Resize event
         proxy.a.parentElement.onmousemove = function (e) {
             if (proxy.mousedown) {
-                console.log(Object.entries(e))
                 var resize = {
                     x: e.clientX,
                     y: e.clientY
@@ -222,8 +225,6 @@
         function resizeHorizontal(obj) {
 
             var bcr = obj.a.parentElement.getBoundingClientRect();
-            obj.a.parentElement.style.overflow = 'hidden'
-            console.log(bcr)
             var offset = bcr.top;
             var rootHeight = bcr.height;
             var cursor = obj.click;
