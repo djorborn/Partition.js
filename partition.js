@@ -212,7 +212,7 @@
             var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootWidth)*100;
-            if (percent > obj.stopGap || percent < (100-obj.stopGap) ) {
+            if (percent > obj.stopGap && percent < (100-obj.stopGap) ) {
                 obj.a.style.width = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
                 obj.b.style.width = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
             }
@@ -223,14 +223,15 @@
          * @param {object} obj
          */
         function resizeHorizontal(obj) {
-
+        
             var bcr = obj.a.parentElement.getBoundingClientRect();
             var offset = bcr.top;
             var rootHeight = bcr.height;
             var cursor = obj.click;
             cursor -= offset;
             var percent = (cursor/rootHeight)*100;
-            if ( percent > obj.stopGap || percent < (100-obj.stopGap) ) {
+            if ( percent > obj.stopGap && percent < (100-obj.stopGap) ) {
+                console.log(percent)
                 obj.a.style.height = 'calc('+percent+'% - '+(obj.barWidth/2)+'px)';
                 obj.b.style.height = 'calc('+(100 - percent)+'% - '+(obj.barWidth/2)+'px)';
             }
