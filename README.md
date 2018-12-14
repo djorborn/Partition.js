@@ -9,11 +9,6 @@ var splitScreen = new Partition({
     barWidth: '8'
 });
 ```
-```css
-#left, #right {
-
-}
-```
 To make a new Partition: `new Partition({options})`:
 ### Options
 - __direction__
